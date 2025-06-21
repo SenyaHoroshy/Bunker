@@ -1,0 +1,38 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    font-weight: bold;
+    background-color: #343a40;
+    color: white;
+}
+
+.list-group-item {
+    transition: all 0.3s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+#player-info ul, #shelter-info ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+#player-info li, #shelter-info li {
+    padding: 5px 0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+}

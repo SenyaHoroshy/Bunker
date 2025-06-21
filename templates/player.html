@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">Игрок #{{ player_id }}</h1>
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Характеристики</span>
+                <button id="reveal-btn" class="btn btn-sm btn-primary">Раскрыть</button>
+            </div>
+            <div class="card-body" id="player-info">
+                <!-- Информация об игроке будет загружена через JavaScript -->
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Убежище
+            </div>
+            <div class="card-body" id="shelter-info">
+                <!-- Информация об убежище будет загружена через JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
