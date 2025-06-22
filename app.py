@@ -9,6 +9,7 @@ from flask import session as flask_session
 from models import GameSession, PlayerSession
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'FhLHNybSzOK4PRnr0gpd'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bunker.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
@@ -55,9 +56,11 @@ def index():
     if not current_session:
         return redirect(url_for('register'))
     
+    # Для администратора - перенаправляем в настройки
     if request.remote_addr == '127.0.0.1':
         return redirect(url_for('setup'))
     
+    # Для обычных игроков проверяем их сессию
     player_session = PlayerSession.query.filter_by(
         ip_address=request.remote_addr,
         session_id=current_session.id
@@ -166,19 +169,16 @@ def register():
             player_id=player_id,
             player_name=player_name,
             ip_address=request.remote_addr,
-            is_admin=(request.remote_addr == '127.0.0.1')
+            is_admin=False  # Все новые игроки по умолчанию не админы
         )
         db.session.add(new_player_session)
         db.session.commit()
         
         flask_session['player_id'] = player_id
         flask_session['player_name'] = player_name
-        flask_session['is_admin'] = (request.remote_addr == '127.0.0.1')
+        flask_session['is_admin'] = False  # Явно указываем, что это не админ
         
-        if request.remote_addr == '127.0.0.1':
-            return redirect(url_for('setup'))
-        else:
-            return redirect(url_for('player', player_id=player_id))
+        return redirect(url_for('player', player_id=player_id))  # Всегда перенаправляем на страницу игрока
     
     return render_template('register.html', 
                          players=Player.query.all(),

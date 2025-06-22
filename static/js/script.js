@@ -16,6 +16,34 @@ if (window.location.pathname.includes('/player/')) {
     });
 }
 
+function loadPlayers() {
+    fetch('/api/players')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(players => {
+            console.log('Players loaded:', players);  // Отладочный вывод
+            const playersList = document.getElementById('players-list');
+            if (players.length === 0) {
+                playersList.innerHTML = '<div class="alert alert-warning">Нет доступных игроков</div>';
+            } else {
+                playersList.innerHTML = players.map(player => `
+                    <a href="/player/${player.id}" class="list-group-item list-group-item-action">
+                        Игрок #${player.id}: ${player.name}
+                    </a>
+                `).join('');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading players:', error);
+            const playersList = document.getElementById('players-list');
+            playersList.innerHTML = '<div class="alert alert-danger">Ошибка загрузки списка игроков</div>';
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Показываем IP сервера
     fetch('/api/server_info')
@@ -56,16 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     // Загрузка списка игроков
-    fetch('/api/players')
-        .then(response => response.json())
-        .then(players => {
-            const playersList = document.getElementById('players-list');
-            playersList.innerHTML = players.map(player => `
-                <a href="/player/${player.id}" class="list-group-item list-group-item-action">
-                    Игрок #${player.id}: ${player.name}
-                </a>
-            `).join('');
-        });
+    loadPlayers();
 
     // Обработка кнопки "Раскрыть" на странице игрока
     const revealBtn = document.getElementById('reveal-btn');

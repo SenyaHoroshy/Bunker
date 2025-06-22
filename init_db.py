@@ -1,4 +1,4 @@
-from models import db, Cataclysm, Player
+from models import db, Cataclysm, Player, GameSession
 
 def initialize_database():
     # Создаем новую игровую сессию

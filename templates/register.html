@@ -1,4 +1,3 @@
-<!-- templates/register.html -->
 {% extends "base.html" %}
 
 {% block content %}
@@ -23,7 +22,7 @@
                         <label for="player_id" class="form-label">Выберите игрока</label>
                         <select class="form-select" id="player_id" name="player_id" required>
                             {% for player in players %}
-                            <option value="{{ player.id }}">Игрок #{{ player.id }}</option>
+                            <option value="{{ player.id }}">Игрок №{{ player.id }}</option>
                             {% endfor %}
                         </select>
                     </div>
