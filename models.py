@@ -30,3 +30,16 @@ class Player(db.Model):
     baggage = db.Column(db.Text, nullable=False)
     cards = db.Column(db.Text, nullable=False)
     is_revealed = db.Column(db.Boolean, default=False)
+
+class GameSession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    is_active = db.Column(db.Boolean, default=True)
+    admin_ip = db.Column(db.String(50), default='127.0.0.1')
+
+class PlayerSession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('game_session.id'))
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
+    player_name = db.Column(db.String(100))
+    ip_address = db.Column(db.String(50))
+    is_admin = db.Column(db.Boolean, default=False)

@@ -33,11 +33,19 @@
 
     <footer class="bg-dark text-white mt-5">
         <div class="container py-3">
-            <p class="mb-0 text-center">Бункер &copy; сделяль Сеня Хороший</p>
+            <p class="mb-0 text-center">Бункер &copy; Сеня Хороший | IP для подключения: <span id="server-ip">загрузка...</span></p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Получаем IP сервера для отображения в футере
+        fetch('/api/server_info')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('server-ip').textContent = data.ip;
+            });
+    </script>
 </body>
 </html>

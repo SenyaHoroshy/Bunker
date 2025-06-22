@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if not session.player_id or session.player_id != player_id %}
+<script>
+    window.location.href = "{{ url_for('register') }}";
+</script>
+{% endif %}
 <div class="row">
     <div class="col-md-8">
         <h1 class="mb-4">Игрок #{{ player_id }}</h1>

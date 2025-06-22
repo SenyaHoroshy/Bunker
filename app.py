@@ -2,12 +2,38 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Cataclysm, Player
 import os
+import socket
 from init_db import initialize_database
+import threading
+from flask import session as flask_session
+from models import GameSession, PlayerSession
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bunker.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+def get_local_ip():
+    """Получаем локальный IP адрес для подключения других устройств"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # не требуется реальное подключение
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+def print_network_info():
+    """Выводим информацию для подключения в консоль"""
+    local_ip = get_local_ip()
+    print("\n" + "="*50)
+    print(f"Сервер запущен. Для подключения:")
+    print(f"На этом устройстве: http://localhost:5000")
+    print(f"На других устройствах в локальной сети: http://{local_ip}:5000")
+    print("="*50 + "\n")
 
 # Создаем БД при первом запуске
 if not os.path.exists('instance/bunker.db'):
@@ -15,14 +41,36 @@ if not os.path.exists('instance/bunker.db'):
         db.create_all()
         initialize_database()
 
+@app.before_request
+def check_session():
+    if request.remote_addr == '127.0.0.1' and not GameSession.query.filter_by(admin_ip='127.0.0.1').first():
+        # Создаем новую сессию, если администратор первый раз заходит
+        new_session = GameSession(admin_ip='127.0.0.1')
+        db.session.add(new_session)
+        db.session.commit()
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    current_session = GameSession.query.first()
+    if not current_session:
+        return redirect(url_for('register'))
+    
+    if request.remote_addr == '127.0.0.1':
+        return redirect(url_for('setup'))
+    
+    player_session = PlayerSession.query.filter_by(
+        ip_address=request.remote_addr,
+        session_id=current_session.id
+    ).first()
+    
+    if player_session:
+        return redirect(url_for('player', player_id=player_session.player_id))
+    else:
+        return redirect(url_for('register'))
 
 @app.route('/setup', methods=['GET', 'POST'])
 def setup():
     if request.method == 'POST':
-        # Здесь можно добавить обработку настроек игры
         return redirect(url_for('index'))
     return render_template('setup.html')
 
@@ -82,5 +130,93 @@ def reveal_player(player_id):
     db.session.commit()
     return jsonify({'success': True})
 
+def run_with_info():
+    """Запускаем сервер с выводом информации о подключении"""
+    #print_network_info()
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+@app.route('/api/server_info')
+def get_server_info():
+    return jsonify({
+        'ip': get_local_ip()
+    })
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    current_session = GameSession.query.first()
+    
+    if request.method == 'POST':
+        player_id = request.form.get('player_id')
+        player_name = request.form.get('player_name')
+        
+        # Проверяем, не занят ли уже этот игрок
+        existing = PlayerSession.query.filter_by(
+            session_id=current_session.id,
+            player_id=player_id
+        ).first()
+        
+        if existing:
+            return render_template('register.html', 
+                                error='Этот игрок уже занят!',
+                                players=Player.query.all())
+        
+        # Создаем запись о игроке в сессии
+        new_player_session = PlayerSession(
+            session_id=current_session.id,
+            player_id=player_id,
+            player_name=player_name,
+            ip_address=request.remote_addr,
+            is_admin=(request.remote_addr == '127.0.0.1')
+        )
+        db.session.add(new_player_session)
+        db.session.commit()
+        
+        flask_session['player_id'] = player_id
+        flask_session['player_name'] = player_name
+        flask_session['is_admin'] = (request.remote_addr == '127.0.0.1')
+        
+        if request.remote_addr == '127.0.0.1':
+            return redirect(url_for('setup'))
+        else:
+            return redirect(url_for('player', player_id=player_id))
+    
+    return render_template('register.html', 
+                         players=Player.query.all(),
+                         error=None)
+
+@app.route('/reset', methods=['POST'])
+def reset_game():
+    if request.remote_addr != '127.0.0.1':
+        return jsonify({'error': 'Только администратор может сбросить игру!'}), 403
+    
+    # Удаляем все записи о текущей сессии
+    PlayerSession.query.delete()
+    GameSession.query.delete()
+    db.session.commit()
+    
+    # Создаем новую сессию
+    new_session = GameSession(admin_ip='127.0.0.1')
+    db.session.add(new_session)
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@app.route('/api/check_access', methods=['POST'])
+def check_access():
+    data = request.get_json()
+    player_id = data['player_id']
+    
+    current_session = GameSession.query.first()
+    if not current_session:
+        return jsonify({'has_access': False})
+    
+    player_session = PlayerSession.query.filter_by(
+        ip_address=request.remote_addr,
+        session_id=current_session.id,
+        player_id=player_id
+    ).first()
+    
+    return jsonify({'has_access': bool(player_session)})
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    run_with_info()

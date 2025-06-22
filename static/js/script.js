@@ -1,4 +1,32 @@
+// Проверяем, зарегистрирован ли игрок
+if (window.location.pathname.includes('/player/')) {
+    const playerId = window.location.pathname.split('/').pop();
+    fetch('/api/check_access', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ player_id: playerId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.has_access) {
+            window.location.href = '/register';
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Показываем IP сервера
+    fetch('/api/server_info')
+        .then(response => response.json())
+        .then(data => {
+            const serverIpElement = document.getElementById('server-ip');
+            if (serverIpElement) {
+                serverIpElement.textContent = data.ip;
+            }
+        });
+    
     // Загрузка информации о катаклизме
     fetch('/api/cataclysm')
         .then(response => response.json())

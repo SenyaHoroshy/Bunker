@@ -1,0 +1,31 @@
+<!-- templates/setup.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Настройки игры</h1>
+        <div class="card">
+            <div class="card-body">
+                <button id="reset-game" class="btn btn-danger">Начать игру сначала</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('reset-game').addEventListener('click', function() {
+        if (confirm('Вы уверены, что хотите начать игру сначала? Все игроки должны будут зарегистрироваться заново.')) {
+            fetch('/reset', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

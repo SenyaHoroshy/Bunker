@@ -1,0 +1,37 @@
+<!-- templates/register.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3>Регистрация игрока</h3>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="player_name" class="form-label">Ваше имя</label>
+                        <input type="text" class="form-control" id="player_name" name="player_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="player_id" class="form-label">Выберите игрока</label>
+                        <select class="form-select" id="player_id" name="player_id" required>
+                            {% for player in players %}
+                            <option value="{{ player.id }}">Игрок #{{ player.id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Начать игру</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

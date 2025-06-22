@@ -1,6 +1,11 @@
 from models import db, Cataclysm, Player
 
 def initialize_database():
+    # Создаем новую игровую сессию
+    session = GameSession()
+    db.session.add(session)
+    db.session.commit()
+
     # Пример данных о катаклизме
     cataclysm = Cataclysm(
         description="Ядерная война",
