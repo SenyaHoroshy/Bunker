@@ -6,6 +6,15 @@
         <h1>Настройки игры</h1>
         <div class="card">
             <div class="card-body">
+                <div class="mb-3">
+                    <label for="game-select" class="form-label">Выберите игру:</label>
+                    <select class="form-select" id="game-select">
+                        {% for game in games %}
+                        <option value="{{ game }}">{{ game }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button id="load-game" class="btn btn-primary">Загрузить игру</button>
                 <button id="reset-game" class="btn btn-danger">Начать игру сначала</button>
             </div>
         </div>
@@ -13,6 +22,24 @@
 </div>
 
 <script>
+    document.getElementById('load-game').addEventListener('click', function() {
+        const game = document.getElementById('game-select').value;
+        fetch('/load_game', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ game: game })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Игра успешно загружена!');
+                location.reload();
+            }
+        });
+    });
+
     document.getElementById('reset-game').addEventListener('click', function() {
         if (confirm('Вы уверены, что хотите начать игру сначала? Все игроки должны будут зарегистрироваться заново.')) {
             fetch('/reset', {

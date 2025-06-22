@@ -146,4 +146,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             });
     }
+
+    // Загрузка информации об убежище
+    const shelterInfo = document.getElementById('shelter-info');
+    if (shelterInfo) {
+        fetch('/api/cataclysm')
+            .then(response => response.json())
+            .then(data => {
+                shelterInfo.innerHTML = `
+                    <h5>${data.description}</h5>
+                    <p>👥 Остаток выжившего населения: ${data.population}%</p>
+                    <p>💥 Разрушения на поверхности: ${data.destruction}%</p>
+                    <h5 class="mt-3">Убежище</h5>
+                    <p>🏡 Площадь убежища: ${data.shelter_area}м²</p>
+                    <p>⌛ Время нахождения в убежище: ${data.time_in_shelter}</p>
+                    <p>🔓 ${data.conditions}</p>
+                    <p class="mt-2"><strong>Оборудование:</strong></p>
+                    <ul>
+                        ${data.equipment.map(item => `<li>🔧 ${item}</li>`).join('')}
+                    </ul>
+                    <p class="mt-2"><strong>Припасы:</strong></p>
+                    <ul>
+                        ${data.supplies.map(item => `<li>📦 ${item}</li>`).join('')}
+                    </ul>
+                    <p class="mt-2"><strong>Обитатели:</strong></p>
+                    <ul>
+                        ${data.inhabitants.map(item => `<li>♻ ${item}</li>`).join('')}
+                    </ul>
+                `;
+            });
+    }
 });

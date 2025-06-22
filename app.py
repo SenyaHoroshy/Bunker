@@ -71,11 +71,10 @@ def index():
     else:
         return redirect(url_for('register'))
 
-@app.route('/setup', methods=['GET', 'POST'])
+@app.route('/setup')
 def setup():
-    if request.method == 'POST':
-        return redirect(url_for('index'))
-    return render_template('setup.html')
+    games = [d for d in os.listdir('games') if os.path.isdir(os.path.join('games', d))]
+    return render_template('setup.html', games=games)
 
 @app.route('/player/<int:player_id>')
 def player(player_id):
@@ -217,6 +216,21 @@ def check_access():
     ).first()
     
     return jsonify({'has_access': bool(player_session)})
+
+@app.route('/load_game', methods=['POST'])
+def load_game():
+    if request.remote_addr != '127.0.0.1':
+        return jsonify({'error': 'Только администратор может загружать игру!'}), 403
+    
+    data = request.get_json()
+    game_folder = data['game']
+    
+    try:
+        from parser import parse_game_data
+        player_count = parse_game_data(game_folder)
+        return jsonify({'success': True, 'players': player_count})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     run_with_info()

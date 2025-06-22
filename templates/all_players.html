@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Все игроки</h1>
+    
+    <div class="row">
+        {% for player in players %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Игрок #{{ player.id }}</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Основная информация -->
+                    <div class="mb-3">
+                        <h6>Основная информация</h6>
+                        <p>🪪 <strong>Имя:</strong> 
+                            {% if player.is_revealed or is_admin %}
+                                {{ player.name }}
+                            {% else %}
+                                <span class="text-muted">Скрыто</span>
+                                {% if is_admin %}
+                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="name" data-player="{{ player.id }}">Открыть</button>
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                        <!-- Аналогично для других полей -->
+                    </div>
+
+                    <!-- Здоровье -->
+                    <div class="mb-3">
+                        <h6>Здоровье</h6>
+                        <ul class="list-unstyled">
+                            {% for item in player.health %}
+                            <li>
+                                {% if item.is_revealed or is_admin %}
+                                    ❤ {{ item.value }}
+                                {% else %}
+                                    <span class="text-muted">Скрыто</span>
+                                    {% if is_admin %}
+                                    <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="health" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                    {% endif %}
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Аналогичные блоки для других характеристик -->
+                    
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка кнопок открытия
+    document.querySelectorAll('.reveal-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const playerId = this.dataset.player;
+            const field = this.dataset.field;
+            const index = this.dataset.index;
+
+            fetch('/api/reveal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    player_id: playerId,
+                    field: field,
+                    index: index
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
