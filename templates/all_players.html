@@ -14,7 +14,6 @@
                 <div class="card-body">
                     <!-- Основная информация -->
                     <div class="mb-3">
-                        <h6>Основная информация</h6>
                         <p>🪪 <strong>Имя: {{ player.name }}</strong> </p>
 
                         {% if player.profession_revealed or is_admin %}
@@ -85,7 +84,15 @@
 
                     <!-- Здоровье -->
                     <div class="mb-3">
-                        <h6>Здоровье</h6>
+                        {% set ns = namespace(show_health=true) %}
+                        {% for item in player.health_items %}
+                            {% if item.revealed or is_admin %}
+                                {% if ns.show_health %}
+                                    <strong>Здоровье:</strong>
+                                    {% set ns.show_health = false %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                         <ul class="list-unstyled">
                             {% for item in player.health_items %}
                                 {% if item.revealed or is_admin %}
@@ -106,7 +113,15 @@
 
                     <!-- Черты характера -->
                     <div class="mb-3">
-                        <h6>Черты характера</h6>
+                        {% set ns = namespace(show_traits=true) %}
+                        {% for item in player.traits_items %}
+                            {% if item.revealed or is_admin %}
+                                {% if ns.show_traits %}
+                                    <strong>Черты характера:</strong>
+                                    {% set ns.show_traits = false %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                         <ul class="list-unstyled">
                             {% for item in player.traits_items %}
                                 {% if item.revealed or is_admin %}
@@ -127,7 +142,15 @@
 
                     <!-- Фобии -->
                     <div class="mb-3">
-                        <h6>Фобии</h6>
+                        {% set ns = namespace(show_phobias=true) %}
+                        {% for item in player.phobias_items %}
+                            {% if item.revealed or is_admin %}
+                                {% if ns.show_phobias %}
+                                    <strong>Фобии:</strong>
+                                    {% set ns.show_phobias = false %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                         <ul class="list-unstyled">
                             {% for item in player.phobias_items %}
                                 {% if item.revealed or is_admin %}
@@ -148,7 +171,15 @@
 
                     <!-- Хобби -->
                     <div class="mb-3">
-                        <h6>Хобби</h6>
+                        {% set ns = namespace(show_hobbies=true) %}
+                        {% for item in player.hobbies_items %}
+                            {% if item.revealed or is_admin %}
+                                {% if ns.show_hobbies %}
+                                    <strong>Хобби:</strong>
+                                    {% set ns.show_hobbies = false %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                         <ul class="list-unstyled">
                             {% for item in player.hobbies_items %}
                                 {% if item.revealed or is_admin %}
@@ -169,7 +200,15 @@
 
                     <!-- Дополнительная информация -->
                     <div class="mb-3">
-                        <h6>Доп. информация</h6>
+                        {% set ns = namespace(show_additional_info=true) %}
+                        {% for item in player.additional_info_items %}
+                            {% if item.revealed or is_admin %}
+                                {% if ns.show_additional_info %}
+                                    <strong>Дополнительная информация:</strong>
+                                    {% set ns.show_additional_info = false %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                         <ul class="list-unstyled">
                             {% for item in player.additional_info_items %}
                                 {% if item.revealed or is_admin %}
@@ -190,7 +229,15 @@
 
                     <!-- Багаж -->
                     <div class="mb-3">
-                        <h6>Багаж</h6>
+                        {% set ns = namespace(show_baggage=true) %}
+                        {% for item in player.baggage_items %}
+                            {% if item.revealed or is_admin %}
+                                {% if ns.show_baggage %}
+                                    <strong>Багаж:</strong>
+                                    {% set ns.show_baggage = false %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                         <ul class="list-unstyled">
                             {% for item in player.baggage_items %}
                                 {% if item.revealed or is_admin %}
@@ -211,7 +258,15 @@
                     
                     <!-- Карты действия -->
                     <div class="mb-3">
-                        <h6>Карты</h6>
+                        {% set ns = namespace(show_cards=true) %}
+                        {% for item in player.cards_items %}
+                            {% if item.revealed or is_admin %}
+                                {% if ns.show_cards %}
+                                    <strong>Карты действия:</strong>
+                                    {% set ns.show_cards = false %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                         <ul class="list-unstyled">
                             {% for item in player.cards_items %}
                                 {% if item.revealed or is_admin %}
