@@ -37,7 +37,8 @@ def print_network_info():
     print("="*50 + "\n")
 
 # Создаем БД при первом запуске
-if not os.path.exists('instance/bunker.db'):
+db_file = os.path.join(app.instance_path, 'bunker.db')
+if not os.path.exists(db_file):
     with app.app_context():
         db.create_all()
         initialize_database()
@@ -112,8 +113,7 @@ def get_player(player_id):
         'hobbies': player.hobbies.split('|'),
         'additional_info': player.additional_info.split('|'),
         'baggage': player.baggage.split('|'),
-        'cards': player.cards.split('|'),
-        'is_revealed': player.is_revealed
+        'cards': player.cards.split('|')
     })
 
 @app.route('/api/players')
@@ -121,14 +121,12 @@ def get_players():
     players = Player.query.all()
     return jsonify([{
         'id': p.id,
-        'name': p.name if p.is_revealed else 'Скрыто',
-        'is_revealed': p.is_revealed
+        'name': p.name
     } for p in players])
 
 @app.route('/api/reveal/<int:player_id>', methods=['POST'])
 def reveal_player(player_id):
     player = Player.query.get_or_404(player_id)
-    player.is_revealed = True
     db.session.commit()
     return jsonify({'success': True})
 
@@ -189,14 +187,13 @@ def reset_game():
         return jsonify({'error': 'Только администратор может сбросить игру!'}), 403
     
     # Удаляем все записи о текущей сессии
-    PlayerSession.query.delete()
-    GameSession.query.delete()
-    db.session.commit()
-    
-    # Создаем новую сессию
-    new_session = GameSession(admin_ip='127.0.0.1')
-    db.session.add(new_session)
-    db.session.commit()
+    with app.app_context():
+        PlayerSession.query.delete()
+        GameSession.query.delete()
+        db.session.commit()
+        
+        # Инициализируем заново
+        initialize_database()
     
     return jsonify({'success': True})
 
@@ -228,9 +225,84 @@ def load_game():
     try:
         from parser import parse_game_data
         player_count = parse_game_data(game_folder)
+        current_app.logger.info(f"Успешно загружена игра '{game_folder}' с {player_count} игроками")
         return jsonify({'success': True, 'players': player_count})
     except Exception as e:
+        current_app.logger.error(f"Ошибка загрузки игры: {str(e)}")
         return jsonify({'error': str(e)}), 400
+
+@app.route('/all_players')
+def all_players():
+    players = Player.query.all()
+    is_admin = request.remote_addr == '127.0.0.1'
+    
+    prepared_players = []
+    for player in players:
+        # Подготавливаем поля-массивы
+        def prepare_list_field(field_value, revealed_indices):
+            items = field_value.split('|') if field_value else []
+            revealed = revealed_indices.split(',') if revealed_indices else []
+            return [{
+                'value': item,
+                'revealed': str(idx) in revealed
+            } for idx, item in enumerate(items)]
+        
+        prepared_players.append({
+            'id': player.id,
+            'name': player.name,
+            'name_revealed': player.name_revealed,
+            'profession': player.profession,
+            'profession_revealed': player.profession_revealed,
+            'gender': player.gender,
+            'gender_revealed': player.gender_revealed,
+            'age': player.age,
+            'age_revealed': player.age_revealed,
+            'childfree': player.childfree,
+            'childfree_revealed': player.childfree_revealed,
+            'physique': player.physique,
+            'physique_revealed': player.physique_revealed,
+            
+            # Поля-массивы
+            'health_items': prepare_list_field(player.health, player.health_revealed),
+            'traits_items': prepare_list_field(player.traits, player.traits_revealed),
+            'phobias_items': prepare_list_field(player.phobias, player.phobias_revealed),
+            'hobbies_items': prepare_list_field(player.hobbies, player.hobbies_revealed),
+            'additional_info_items': prepare_list_field(player.additional_info, player.additional_info_revealed),
+            'baggage_items': prepare_list_field(player.baggage, player.baggage_revealed),
+            'cards_items': prepare_list_field(player.cards, player.cards_revealed),
+        })
+    
+    return render_template('all_players.html', 
+                         players=prepared_players,
+                         is_admin=is_admin)
+
+@app.route('/api/reveal', methods=['POST'])
+def reveal_field():
+    if request.remote_addr != '127.0.0.1':
+        return jsonify({'error': 'Только администратор может открывать характеристики!'}), 403
+    
+    data = request.get_json()
+    player = Player.query.get_or_404(data['player_id'])
+    
+    # Обрабатываем обычные поля
+    simple_fields = ['name', 'profession', 'gender', 'age', 'childfree', 'physique']
+    if data['field'] in simple_fields:
+        setattr(player, f"{data['field']}_revealed", True)
+    else:
+        # Обрабатываем поля-массивы
+        revealed = getattr(player, f"{data['field']}_revealed")
+        if not revealed:
+            revealed = str(data['index'])
+        else:
+            revealed_indices = revealed.split(',')
+            if str(data['index']) not in revealed_indices:
+                revealed_indices.append(str(data['index']))
+                revealed = ','.join(revealed_indices)
+        
+        setattr(player, f"{data['field']}_revealed", revealed)
+    
+    db.session.commit()
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     run_with_info()

@@ -2,6 +2,14 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+class PlayerSession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('game_session.id'))
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
+    player_name = db.Column(db.String(100))
+    ip_address = db.Column(db.String(50))
+    is_admin = db.Column(db.Boolean, default=False)
+
 class Cataclysm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(500), nullable=False)
@@ -29,17 +37,25 @@ class Player(db.Model):
     additional_info = db.Column(db.Text, nullable=False)
     baggage = db.Column(db.Text, nullable=False)
     cards = db.Column(db.Text, nullable=False)
-    is_revealed = db.Column(db.Boolean, default=False)
+    
+    # Поля, которые хранят положение элементов (открыто/закрыто другим игрокам)
+    name_revealed = db.Column(db.Boolean, default=False)
+    profession_revealed = db.Column(db.Boolean, default=False)
+    gender_revealed = db.Column(db.Boolean, default=False)
+    age_revealed = db.Column(db.Boolean, default=False)
+    childfree_revealed = db.Column(db.Boolean, default=False)
+    physique_revealed = db.Column(db.Boolean, default=False)
+    
+    # Для массивов
+    health_revealed = db.Column(db.String(255), default="")
+    traits_revealed = db.Column(db.String(255), default="")
+    phobias_revealed = db.Column(db.String(255), default="")
+    hobbies_revealed = db.Column(db.String(255), default="")
+    additional_info_revealed = db.Column(db.String(255), default="")
+    baggage_revealed = db.Column(db.String(255), default="")
+    cards_revealed = db.Column(db.String(255), default="")
 
 class GameSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     is_active = db.Column(db.Boolean, default=True)
     admin_ip = db.Column(db.String(50), default='127.0.0.1')
-
-class PlayerSession(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(db.Integer, db.ForeignKey('game_session.id'))
-    player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
-    player_name = db.Column(db.String(100))
-    ip_address = db.Column(db.String(50))
-    is_admin = db.Column(db.Boolean, default=False)

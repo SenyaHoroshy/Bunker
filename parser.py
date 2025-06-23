@@ -4,72 +4,94 @@ from models import db, Cataclysm, Player
 
 def parse_game_data(game_folder):
     """Парсит данные игры из указанной папки и обновляет базу данных"""
-    game_path = os.path.join('games', game_folder)
-    
-    # Проверяем, что папка существует
-    if not os.path.exists(game_path):
-        raise ValueError(f"Папка игры '{game_folder}' не найдена")
-    
-    # Очищаем текущие данные
-    db.session.query(Player).delete()
-    db.session.query(Cataclysm).delete()
-    db.session.commit()
-    
-    # Ищем все файлы игроков
-    player_files = [f for f in os.listdir(game_path) if f.startswith('Player') and f.endswith('.txt')]
-    
-    if not player_files:
-        raise ValueError(f"В папке '{game_folder}' не найдены файлы игроков")
-    
-    # Парсим данные из первого файла игрока (для катаклизма и убежища)
-    first_player_file = os.path.join(game_path, player_files[0])
-    with open(first_player_file, 'r', encoding='utf-8') as file:
-        content = file.read()
-    
-    # Парсим данные о катаклизме и убежище
-    cataclysm_data = parse_cataclysm(content)
-    shelter_data = parse_shelter(content)
-    
-    # Создаем запись о катаклизме
-    cataclysm = Cataclysm(
-        description=cataclysm_data['description'],
-        population=cataclysm_data['population'],
-        destruction=cataclysm_data['destruction'],
-        shelter_area=shelter_data['area'],
-        time_in_shelter=shelter_data['time'],
-        conditions=shelter_data['conditions'],
-        equipment='|'.join(shelter_data['equipment']),
-        supplies='|'.join(shelter_data['supplies']),
-        inhabitants='|'.join(shelter_data['inhabitants'])
-    )
-    db.session.add(cataclysm)
-    
-    # Парсим данные всех игроков
-    for player_file in player_files:
-        with open(os.path.join(game_path, player_file), 'r', encoding='utf-8') as file:
+    try:
+        game_path = os.path.join('games', game_folder)
+        
+        # Проверяем, что папка существует
+        if not os.path.exists(game_path):
+            raise ValueError(f"Папка игры '{game_folder}' не найдена в директории 'games'")
+        
+        # Очищаем текущие данные
+        with db.session.begin():
+            db.session.query(Player).delete()
+            db.session.query(Cataclysm).delete()
+        
+        # Ищем все файлы игроков
+        player_files = sorted(
+            [f for f in os.listdir(game_path) 
+             if re.match(r'Player\d+\.txt$', f)],
+            key=lambda x: int(re.search(r'\d+', x).group())
+        )
+        
+        if not player_files:
+            raise ValueError(f"В папке '{game_folder}' не найдены файлы игроков (ожидаются файлы вида Player1.txt, Player2.txt...)")
+        
+        # Парсим данные из первого файла игрока (для катаклизма и убежища)
+        first_player_path = os.path.join(game_path, player_files[0])
+        with open(first_player_path, 'r', encoding='utf-8') as file:
             content = file.read()
-            player_data = parse_player(content)
-            
-            player = Player(
-                name=player_data['name'],
-                profession=player_data['profession'],
-                gender=player_data['gender'],
-                age=player_data['age'],
-                childfree=player_data['childfree'],
-                physique=player_data['physique'],
-                health='|'.join(player_data['health']),
-                traits='|'.join(player_data['traits']),
-                phobias='|'.join(player_data['phobias']),
-                hobbies='|'.join(player_data['hobbies']),
-                additional_info='|'.join(player_data['additional_info']),
-                baggage='|'.join(player_data['baggage']),
-                cards='|'.join(player_data['cards']),
-                is_revealed=False
-            )
-            db.session.add(player)
+        
+        # Парсим данные о катаклизме и убежище
+        cataclysm_data = parse_cataclysm(content)
+        shelter_data = parse_shelter(content)
+        
+        # Создаем запись о катаклизме
+        cataclysm = Cataclysm(
+            description=cataclysm_data['description'],
+            population=cataclysm_data['population'],
+            destruction=cataclysm_data['destruction'],
+            shelter_area=shelter_data['area'],
+            time_in_shelter=shelter_data['time'],
+            conditions=shelter_data['conditions'],
+            equipment='|'.join(shelter_data['equipment']),
+            supplies='|'.join(shelter_data['supplies']),
+            inhabitants='|'.join(shelter_data['inhabitants'])
+        )
+        db.session.add(cataclysm)
+        
+        # Парсим данные всех игроков
+        for player_file in player_files:
+            player_path = os.path.join(game_path, player_file)
+            with open(player_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                player_data = parse_player(content)
+                
+                player = Player(
+                    name=player_data['name'],
+                    profession=player_data['profession'],
+                    gender=player_data['gender'],
+                    age=player_data['age'],
+                    childfree=player_data['childfree'],
+                    physique=player_data['physique'],
+                    health='|'.join(player_data['health']),
+                    traits='|'.join(player_data['traits']),
+                    phobias='|'.join(player_data['phobias']),
+                    hobbies='|'.join(player_data['hobbies']),
+                    additional_info='|'.join(player_data['additional_info']),
+                    baggage='|'.join(player_data['baggage']),
+                    cards='|'.join(player_data['cards']),
+                    name_revealed=False,
+                    profession_revealed=False,
+                    gender_revealed=False,
+                    age_revealed=False,
+                    childfree_revealed=False,
+                    physique_revealed=False,
+                    health_revealed="",
+                    traits_revealed="",
+                    phobias_revealed="",
+                    hobbies_revealed="",
+                    additional_info_revealed="",
+                    baggage_revealed="",
+                    cards_revealed=""
+                )
+                db.session.add(player)
+        
+        db.session.commit()
+        return len(player_files)
     
-    db.session.commit()
-    return len(player_files)
+    except Exception as e:
+        db.session.rollback()
+        raise ValueError(f"Ошибка при парсинге игры: {str(e)}")
 
 def parse_cataclysm(content):
     """Парсит данные о катаклизме"""
