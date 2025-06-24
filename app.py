@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, current_app
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Cataclysm, Player
 import os
@@ -225,10 +225,10 @@ def load_game():
     try:
         from parser import parse_game_data
         player_count = parse_game_data(game_folder)
-        current_app.logger.info(f"Успешно загружена игра '{game_folder}' с {player_count} игроками")
+        app.logger.info(f"Успешно загружена игра '{game_folder}' с {player_count} игроками")
         return jsonify({'success': True, 'players': player_count})
     except Exception as e:
-        current_app.logger.error(f"Ошибка загрузки игры: {str(e)}")
+        app.logger.error(f"Ошибка загрузки игры: {str(e)}")
         return jsonify({'error': str(e)}), 400
 
 @app.route('/all_players')

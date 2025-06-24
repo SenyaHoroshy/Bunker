@@ -1,4 +1,5 @@
 import os
+import re
 from flask import current_app
 from models import db, Cataclysm, Player
 
@@ -12,14 +13,18 @@ def parse_game_data(game_folder):
             raise ValueError(f"Папка игры '{game_folder}' не найдена в директории 'games'")
         
         # Очищаем текущие данные
-        with db.session.begin():
+        try:
             db.session.query(Player).delete()
             db.session.query(Cataclysm).delete()
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise
         
         # Ищем все файлы игроков
         player_files = sorted(
             [f for f in os.listdir(game_path) 
-             if re.match(r'Player\d+\.txt$', f)],
+             if re.match(r'Player \d+\.txt$', f)],
             key=lambda x: int(re.search(r'\d+', x).group())
         )
         
