@@ -236,9 +236,20 @@ def all_players():
     players = Player.query.all()
     is_admin = request.remote_addr == '127.0.0.1'
     
+    # Получаем текущего игрока (если он зарегистрирован)
+    current_player_id = None
+    if 'player_id' in flask_session:
+        current_player_id = flask_session['player_id']
+    
+    current_session = GameSession.query.first()
+    
     prepared_players = []
     for player in players:
-        # Подготавливаем поля-массивы
+        player_session = PlayerSession.query.filter_by(
+            session_id=current_session.id,
+            player_id=player.id
+        ).first()
+        
         def prepare_list_field(field_value, revealed_indices):
             items = field_value.split('|') if field_value else []
             revealed = revealed_indices.split(',') if revealed_indices else []
@@ -247,10 +258,14 @@ def all_players():
                 'revealed': str(idx) in revealed
             } for idx, item in enumerate(items)]
         
+        # Определяем, является ли этот игрок текущим
+        is_current_player = str(player.id) == str(current_player_id)
+        
         prepared_players.append({
             'id': player.id,
             'name': player.name,
-            'name_revealed': player.name_revealed,
+            'player_name': player_session.player_name if player_session else f"Игрок {player.id}",
+            'is_current_player': is_current_player,
             'profession': player.profession,
             'profession_revealed': player.profession_revealed,
             'gender': player.gender,
@@ -261,8 +276,6 @@ def all_players():
             'childfree_revealed': player.childfree_revealed,
             'physique': player.physique,
             'physique_revealed': player.physique_revealed,
-            
-            # Поля-массивы
             'health_items': prepare_list_field(player.health, player.health_revealed),
             'traits_items': prepare_list_field(player.traits, player.traits_revealed),
             'phobias_items': prepare_list_field(player.phobias, player.phobias_revealed),
@@ -279,27 +292,31 @@ def all_players():
 @app.route('/api/reveal', methods=['POST'])
 def reveal_field():
     if request.remote_addr != '127.0.0.1':
-        return jsonify({'error': 'Только администратор может открывать характеристики!'}), 403
+        return jsonify({'error': 'Только администратор может открывать/закрывать характеристики!'}), 403
     
     data = request.get_json()
     player = Player.query.get_or_404(data['player_id'])
     
-    # Обрабатываем обычные поля
+    # Обрабатываем обычные поля (name, profession и т.д.)
     simple_fields = ['name', 'profession', 'gender', 'age', 'childfree', 'physique']
     if data['field'] in simple_fields:
-        setattr(player, f"{data['field']}_revealed", True)
+        current_state = getattr(player, f"{data['field']}_revealed")
+        setattr(player, f"{data['field']}_revealed", not current_state)
     else:
-        # Обрабатываем поля-массивы
+        # Обрабатываем поля-массивы (health, traits и т.д.)
         revealed = getattr(player, f"{data['field']}_revealed")
-        if not revealed:
-            revealed = str(data['index'])
-        else:
-            revealed_indices = revealed.split(',')
-            if str(data['index']) not in revealed_indices:
-                revealed_indices.append(str(data['index']))
-                revealed = ','.join(revealed_indices)
+        revealed_indices = revealed.split(',') if revealed else []
         
-        setattr(player, f"{data['field']}_revealed", revealed)
+        index_str = str(data['index'])
+        
+        if index_str in revealed_indices:
+            # Удаляем индекс, если он уже есть (закрываем)
+            revealed_indices.remove(index_str)
+        else:
+            # Добавляем индекс, если его нет (открываем)
+            revealed_indices.append(index_str)
+        
+        setattr(player, f"{data['field']}_revealed", ','.join(revealed_indices))
     
     db.session.commit()
     return jsonify({'success': True})

@@ -4,319 +4,367 @@
 <div class="container">
     <h1 class="my-4">Все игроки</h1>
     
-    <div class="row">
+    <div class="accordion" id="playersAccordion">
         {% for player in players %}
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Игрок №{{ player.id }}</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Основная информация -->
-                    <div class="mb-3">
-                        <p>🪪 <strong>Имя: {{ player.name }}</strong> </p>
+            {% if not player.is_current_player %}
+            <div class="accordion-item mb-3">
+                <h2 class="accordion-header" id="heading{{ player.id }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#collapse{{ player.id }}" aria-expanded="false" 
+                            aria-controls="collapse{{ player.id }}">
+                        <strong>Игрок №{{ player.id }}</strong> - {{ player.player_name }}
+                    </button>
+                </h2>
+                <div id="collapse{{ player.id }}" class="accordion-collapse collapse" 
+                    aria-labelledby="heading{{ player.id }}" data-bs-parent="#playersAccordion">
+                    <div class="accordion-body">
+                        <!-- Основная информация -->
+                        <div class="mb-3">
+                            <p>🪪 <strong>Имя: {{ player.name }}</strong> </p>
 
-                        {% if player.profession_revealed or is_admin %}
-                            <p>💼 <strong>Профессия:</strong> 
-                                {{ player.profession }}
-                                {% if is_admin%}
-                                    {% if player.profession_revealed %}
-                                        <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="profession" data-player="{{ player.id }}">Закрыть</button>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="profession" data-player="{{ player.id }}">Открыть</button>
+                            {% if player.profession_revealed or is_admin %}
+                                <p>💼 <strong>Профессия:</strong> 
+                                    {{ player.profession }}
+                                    {% if is_admin%}
+                                        {% if player.profession_revealed %}
+                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="profession" data-player="{{ player.id }}">Закрыть</button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="profession" data-player="{{ player.id }}">Открыть</button>
+                                        {% endif %}
                                     {% endif %}
-                                {% endif %}
-                            </p>
-                        {% endif %}
-
-                        {% if player.gender_revealed or is_admin %}
-                            <p>👥 <strong>Пол:</strong> 
-                                {{ player.gender }}
-                                {% if is_admin%}
-                                    {% if player.gender_revealed %}
-                                        <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="gender" data-player="{{ player.id }}">Закрыть</button>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="gender" data-player="{{ player.id }}">Открыть</button>
-                                    {% endif %}
-                                {% endif %}
-                            </p>
-                        {% endif %}
-
-                        {% if player.age_revealed or is_admin %}
-                            <p>🧸 <strong>Возраст:</strong> 
-                                {{ player.age }}
-                                {% if is_admin%}
-                                    {% if player.age_revealed %}
-                                        <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="age" data-player="{{ player.id }}">Закрыть</button>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="age" data-player="{{ player.id }}">Открыть</button>
-                                    {% endif %}
-                                {% endif %}
-                            </p>
-                        {% endif %}
-
-                        {% if player.childfree_revealed or is_admin %}
-                            <p>👶 <strong>Деторождение:</strong> 
-                                {{ player.childfree }}
-                                {% if is_admin%}
-                                    {% if player.childfree_revealed %}
-                                        <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="childfree" data-player="{{ player.id }}">Закрыть</button>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="childfree" data-player="{{ player.id }}">Открыть</button>
-                                    {% endif %}
-                                {% endif %}
-                            </p>
-                        {% endif %}
-
-                        {% if player.physique_revealed or is_admin %}
-                            <p>🧘 <strong>Телосложение:</strong> 
-                                {{ player.physique }}
-                                {% if is_admin%}
-                                    {% if player.physique_revealed %}
-                                        <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="physique" data-player="{{ player.id }}">Закрыть</button>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="physique" data-player="{{ player.id }}">Открыть</button>
-                                    {% endif %}
-                                {% endif %}
-                            </p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Здоровье -->
-                    <div class="mb-3">
-                        {% set ns = namespace(show_health=true) %}
-                        {% for item in player.health_items %}
-                            {% if item.revealed or is_admin %}
-                                {% if ns.show_health %}
-                                    <strong>Здоровье:</strong>
-                                    {% set ns.show_health = false %}
-                                {% endif %}
+                                </p>
                             {% endif %}
-                        {% endfor %}
-                        <ul class="list-unstyled">
+
+                            {% if player.gender_revealed or is_admin %}
+                                <p>👥 <strong>Пол:</strong> 
+                                    {{ player.gender }}
+                                    {% if is_admin%}
+                                        {% if player.gender_revealed %}
+                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="gender" data-player="{{ player.id }}">Закрыть</button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="gender" data-player="{{ player.id }}">Открыть</button>
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+
+                            {% if player.age_revealed or is_admin %}
+                                <p>🧸 <strong>Возраст:</strong> 
+                                    {{ player.age }}
+                                    {% if is_admin%}
+                                        {% if player.age_revealed %}
+                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="age" data-player="{{ player.id }}">Закрыть</button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="age" data-player="{{ player.id }}">Открыть</button>
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+
+                            {% if player.childfree_revealed or is_admin %}
+                                <p>👶 <strong>Деторождение:</strong> 
+                                    {{ player.childfree }}
+                                    {% if is_admin%}
+                                        {% if player.childfree_revealed %}
+                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="childfree" data-player="{{ player.id }}">Закрыть</button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="childfree" data-player="{{ player.id }}">Открыть</button>
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+
+                            {% if player.physique_revealed or is_admin %}
+                                <p>🧘 <strong>Телосложение:</strong> 
+                                    {{ player.physique }}
+                                    {% if is_admin%}
+                                        {% if player.physique_revealed %}
+                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="physique" data-player="{{ player.id }}">Закрыть</button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="physique" data-player="{{ player.id }}">Открыть</button>
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Здоровье -->
+                        <div class="mb-3">
+                            {% set ns = namespace(show_health=true) %}
                             {% for item in player.health_items %}
                                 {% if item.revealed or is_admin %}
-                                <li>
-                                    ❤ {{ item.value }}
-                                    {% if is_admin%}
-                                        {% if item.revealed %}
-                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="health" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="health" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
-                                        {% endif %}
+                                    {% if ns.show_health %}
+                                        <strong>Здоровье:</strong>
+                                        {% set ns.show_health = false %}
                                     {% endif %}
-                                </li>
                                 {% endif %}
                             {% endfor %}
-                        </ul>
-                    </div>
+                            <ul class="list-unstyled">
+                                {% for item in player.health_items %}
+                                    {% if item.revealed or is_admin %}
+                                    <li>
+                                        ❤ {{ item.value }}
+                                        {% if is_admin%}
+                                            {% if item.revealed %}
+                                                <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="health" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="health" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
 
-                    <!-- Черты характера -->
-                    <div class="mb-3">
-                        {% set ns = namespace(show_traits=true) %}
-                        {% for item in player.traits_items %}
-                            {% if item.revealed or is_admin %}
-                                {% if ns.show_traits %}
-                                    <strong>Черты характера:</strong>
-                                    {% set ns.show_traits = false %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        <ul class="list-unstyled">
+                        <!-- Черты характера -->
+                        <div class="mb-3">
+                            {% set ns = namespace(show_traits=true) %}
                             {% for item in player.traits_items %}
                                 {% if item.revealed or is_admin %}
-                                <li>
-                                    👺 {{ item.value }}
-                                    {% if is_admin%}
-                                        {% if item.revealed %}
-                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="traits" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="traits" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
-                                        {% endif %}
+                                    {% if ns.show_traits %}
+                                        <strong>Черты характера:</strong>
+                                        {% set ns.show_traits = false %}
                                     {% endif %}
-                                </li>
                                 {% endif %}
                             {% endfor %}
-                        </ul>
-                    </div>
+                            <ul class="list-unstyled">
+                                {% for item in player.traits_items %}
+                                    {% if item.revealed or is_admin %}
+                                    <li>
+                                        👺 {{ item.value }}
+                                        {% if is_admin%}
+                                            {% if item.revealed %}
+                                                <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="traits" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="traits" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
 
-                    <!-- Фобии -->
-                    <div class="mb-3">
-                        {% set ns = namespace(show_phobias=true) %}
-                        {% for item in player.phobias_items %}
-                            {% if item.revealed or is_admin %}
-                                {% if ns.show_phobias %}
-                                    <strong>Фобии:</strong>
-                                    {% set ns.show_phobias = false %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        <ul class="list-unstyled">
+                        <!-- Фобии -->
+                        <div class="mb-3">
+                            {% set ns = namespace(show_phobias=true) %}
                             {% for item in player.phobias_items %}
                                 {% if item.revealed or is_admin %}
-                                <li>
-                                    👻 {{ item.value }}
-                                    {% if is_admin%}
-                                        {% if item.revealed %}
-                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="phobias" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="phobias" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
-                                        {% endif %}
+                                    {% if ns.show_phobias %}
+                                        <strong>Фобии:</strong>
+                                        {% set ns.show_phobias = false %}
                                     {% endif %}
-                                </li>
                                 {% endif %}
                             {% endfor %}
-                        </ul>
-                    </div>
+                            <ul class="list-unstyled">
+                                {% for item in player.phobias_items %}
+                                    {% if item.revealed or is_admin %}
+                                    <li>
+                                        👻 {{ item.value }}
+                                        {% if is_admin%}
+                                            {% if item.revealed %}
+                                                <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="phobias" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="phobias" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
 
-                    <!-- Хобби -->
-                    <div class="mb-3">
-                        {% set ns = namespace(show_hobbies=true) %}
-                        {% for item in player.hobbies_items %}
-                            {% if item.revealed or is_admin %}
-                                {% if ns.show_hobbies %}
-                                    <strong>Хобби:</strong>
-                                    {% set ns.show_hobbies = false %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        <ul class="list-unstyled">
+                        <!-- Хобби -->
+                        <div class="mb-3">
+                            {% set ns = namespace(show_hobbies=true) %}
                             {% for item in player.hobbies_items %}
                                 {% if item.revealed or is_admin %}
-                                <li>
-                                    🎣 {{ item.value }}
-                                    {% if is_admin%}
-                                        {% if item.revealed %}
-                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="hobbies" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="hobbies" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
-                                        {% endif %}
+                                    {% if ns.show_hobbies %}
+                                        <strong>Хобби:</strong>
+                                        {% set ns.show_hobbies = false %}
                                     {% endif %}
-                                </li>
                                 {% endif %}
                             {% endfor %}
-                        </ul>
-                    </div>
+                            <ul class="list-unstyled">
+                                {% for item in player.hobbies_items %}
+                                    {% if item.revealed or is_admin %}
+                                    <li>
+                                        🎣 {{ item.value }}
+                                        {% if is_admin%}
+                                            {% if item.revealed %}
+                                                <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="hobbies" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="hobbies" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
 
-                    <!-- Дополнительная информация -->
-                    <div class="mb-3">
-                        {% set ns = namespace(show_additional_info=true) %}
-                        {% for item in player.additional_info_items %}
-                            {% if item.revealed or is_admin %}
-                                {% if ns.show_additional_info %}
-                                    <strong>Дополнительная информация:</strong>
-                                    {% set ns.show_additional_info = false %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        <ul class="list-unstyled">
+                        <!-- Дополнительная информация -->
+                        <div class="mb-3">
+                            {% set ns = namespace(show_additional_info=true) %}
                             {% for item in player.additional_info_items %}
                                 {% if item.revealed or is_admin %}
-                                <li>
-                                    📝 {{ item.value }}
-                                    {% if is_admin%}
-                                        {% if item.revealed %}
-                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="additional_info" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="additional_info" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
-                                        {% endif %}
+                                    {% if ns.show_additional_info %}
+                                        <strong>Дополнительная информация:</strong>
+                                        {% set ns.show_additional_info = false %}
                                     {% endif %}
-                                </li>
                                 {% endif %}
                             {% endfor %}
-                        </ul>
-                    </div>
+                            <ul class="list-unstyled">
+                                {% for item in player.additional_info_items %}
+                                    {% if item.revealed or is_admin %}
+                                    <li>
+                                        📝 {{ item.value }}
+                                        {% if is_admin%}
+                                            {% if item.revealed %}
+                                                <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="additional_info" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="additional_info" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
 
-                    <!-- Багаж -->
-                    <div class="mb-3">
-                        {% set ns = namespace(show_baggage=true) %}
-                        {% for item in player.baggage_items %}
-                            {% if item.revealed or is_admin %}
-                                {% if ns.show_baggage %}
-                                    <strong>Багаж:</strong>
-                                    {% set ns.show_baggage = false %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        <ul class="list-unstyled">
+                        <!-- Багаж -->
+                        <div class="mb-3">
+                            {% set ns = namespace(show_baggage=true) %}
                             {% for item in player.baggage_items %}
                                 {% if item.revealed or is_admin %}
-                                <li>
-                                    📦 {{ item.value }}
-                                    {% if is_admin%}
-                                        {% if item.revealed %}
-                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="baggage" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="baggage" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
-                                        {% endif %}
+                                    {% if ns.show_baggage %}
+                                        <strong>Багаж:</strong>
+                                        {% set ns.show_baggage = false %}
                                     {% endif %}
-                                </li>
                                 {% endif %}
                             {% endfor %}
-                        </ul>
-                    </div>
-                    
-                    <!-- Карты действия -->
-                    <div class="mb-3">
-                        {% set ns = namespace(show_cards=true) %}
-                        {% for item in player.cards_items %}
-                            {% if item.revealed or is_admin %}
-                                {% if ns.show_cards %}
-                                    <strong>Карты действия:</strong>
-                                    {% set ns.show_cards = false %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                        <ul class="list-unstyled">
+                            <ul class="list-unstyled">
+                                {% for item in player.baggage_items %}
+                                    {% if item.revealed or is_admin %}
+                                    <li>
+                                        📦 {{ item.value }}
+                                        {% if is_admin%}
+                                            {% if item.revealed %}
+                                                <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="baggage" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="baggage" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <!-- Карты действия -->
+                        <div class="mb-3">
+                            {% set ns = namespace(show_cards=true) %}
                             {% for item in player.cards_items %}
                                 {% if item.revealed or is_admin %}
-                                <li>
-                                    🃏 Карта {{ loop.index }}: {{ item.value }}
-                                    {% if is_admin%}
-                                        {% if item.revealed %}
-                                            <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="cards" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="cards" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
-                                        {% endif %}
+                                    {% if ns.show_cards %}
+                                        <strong>Карты действия:</strong>
+                                        {% set ns.show_cards = false %}
                                     {% endif %}
-                                </li>
                                 {% endif %}
                             {% endfor %}
-                        </ul>
+                            <ul class="list-unstyled">
+                                {% for item in player.cards_items %}
+                                    {% if item.revealed or is_admin %}
+                                    <li>
+                                        🃏 Карта {{ loop.index }}: {{ item.value }}
+                                        {% if is_admin%}
+                                            {% if item.revealed %}
+                                                <button class="btn btn-sm btn-outline-danger reveal-btn" data-field="cards" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Закрыть</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary reveal-btn" data-field="cards" data-index="{{ loop.index0 }}" data-player="{{ player.id }}">Открыть</button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            {% endif %}
         {% endfor %}
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Кнопка "открыть"
+    // Обработка кнопок "Открыть/Закрыть"
     document.querySelectorAll('.reveal-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const playerId = this.dataset.player;
-            const field = this.dataset.field;
-            const index = this.dataset.index;
-
-            fetch('/api/reveal', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    player_id: playerId,
-                    field: field,
-                    index: index
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
+        btn.addEventListener('click', async function() {
+            const button = this;
+            const playerId = button.dataset.player;
+            const field = button.dataset.field;
+            const index = button.dataset.index !== undefined ? button.dataset.index : null;
+            
+            // Блокируем кнопку на время запроса
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/reveal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        player_id: playerId,
+                        field: field,
+                        index: index
+                    })
+                });
+                
+                const data = await response.json();
+                
                 if (data.success) {
-                    location.reload();
+                    // Находим родительский элемент характеристики
+                    const parentElement = button.closest('li') || button.closest('p');
+                    
+                    if (button.textContent.trim() === 'Открыть') {
+                        // Меняем кнопку на "Закрыть"
+                        button.textContent = 'Закрыть';
+                        button.classList.remove('btn-outline-primary');
+                        button.classList.add('btn-outline-danger');
+                        
+                        // Если это поле-массив, показываем элемент
+                        if (index !== null) {
+                            parentElement.style.display = 'block';
+                        }
+                    } else {
+                        // Меняем кнопку на "Открыть"
+                        button.textContent = 'Открыть';
+                        button.classList.remove('btn-outline-danger');
+                        button.classList.add('btn-outline-primary');
+                        
+                        // Если это поле-массив, скрываем элемент
+                        if (index !== null) {
+                            parentElement.style.display = 'none';
+                        }
+                    }
+                    
+                    // Для простых полей обновляем видимость всей характеристики
+                    if (index === null) {
+                        const fieldElement = parentElement.querySelector('span.field-value');
+                        if (fieldElement) {
+                            fieldElement.style.display = button.textContent.trim() === 'Закрыть' ? 'inline' : 'none';
+                        }
+                    }
                 }
-            });
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                button.disabled = false;
+            }
         });
     });
 });
