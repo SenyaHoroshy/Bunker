@@ -109,7 +109,7 @@ def parse_cataclysm(content):
     cataclysm_section = content[start:end]
     
     # Извлекаем описание
-    description_start = cataclysm_section.find('Катаклизм') + 11
+    description_start = cataclysm_section.find('Катаклизм') + 21
     description_end = cataclysm_section.find('👥')
     description = cataclysm_section[description_start:description_end].strip()
     
@@ -236,11 +236,11 @@ def parse_player(content):
     
     # Извлекаем телосложение
     physique_start = player_section.find('🧘') + 15
-    physique_end = player_section.find('❤')
-    physique = player_section[physique_start:physique_end].strip()
+    physique_end = player_section.find('Здоровье:')
+    physique = player_section[physique_start:physique_end - 1].strip()
     
     # Извлекаем здоровье
-    health_start = player_section.find('❤') + 10
+    health_start = player_section.find('Здоровье:') + 10
     health_end = player_section.find('👺')
     health = [player_section[health_start:health_end].strip()]
     

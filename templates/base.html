@@ -16,15 +16,20 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
+                    {% if not session.get('is_admin') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
                     </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('all_players') }}">Все игроки</a>
                     </li>
                     {% if session.get('is_admin') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('setup') }}">Настройка</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('manage_players') }}">Управление игроками</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -46,7 +51,7 @@
 
     <footer class="bg-dark text-white mt-5">
         <div class="container py-3">
-            <p class="mb-0 text-center">Бункер &copy; Сеня Хороший | IP для подключения: <span id="server-ip">загрузка...</span></p>
+            <p class="mb-0 text-center">Бункер &copy; Сеня Хороший | IP для подключения: <span id="server-ip">загрузка...</span>:5000</p>
         </div>
     </footer>
 

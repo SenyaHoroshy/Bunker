@@ -59,6 +59,46 @@ def index():
     
     # Для администратора - перенаправляем в настройки
     if request.remote_addr == '127.0.0.1':
+        # Создаем автоматическую сессию для администратора
+        admin_session = PlayerSession.query.filter_by(
+            ip_address='127.0.0.1',
+            session_id=current_session.id
+        ).first()
+        
+        if not admin_session:
+            # Создаем нового администратора
+            admin_player = Player(
+                name="Администратор",
+                profession="Администратор",
+                gender="",
+                age=0,
+                childfree="",
+                physique="",
+                health="",
+                traits="",
+                phobias="",
+                hobbies="",
+                additional_info="",
+                baggage="",
+                cards=""
+            )
+            db.session.add(admin_player)
+            db.session.commit()
+            
+            admin_session = PlayerSession(
+                session_id=current_session.id,
+                player_id=admin_player.id,
+                player_name="Администратор",
+                ip_address='127.0.0.1',
+                is_admin=True
+            )
+            db.session.add(admin_session)
+            db.session.commit()
+        
+        flask_session['player_id'] = admin_session.player_id
+        flask_session['player_name'] = admin_session.player_name
+        flask_session['is_admin'] = True
+        
         return redirect(url_for('setup'))
     
     # Для обычных игроков проверяем их сессию
@@ -74,6 +114,9 @@ def index():
 
 @app.route('/setup')
 def setup():
+    if not flask_session.get('is_admin'):
+        return redirect(url_for('index'))
+    
     games = [d for d in os.listdir('games') if os.path.isdir(os.path.join('games', d))]
     return render_template('setup.html', games=games)
 
@@ -160,22 +203,25 @@ def register():
                                 error='Этот игрок уже занят!',
                                 players=Player.query.all())
         
+        # Проверяем, является ли пользователь администратором
+        is_admin = request.remote_addr == '127.0.0.1'
+        
         # Создаем запись о игроке в сессии
         new_player_session = PlayerSession(
             session_id=current_session.id,
             player_id=player_id,
             player_name=player_name,
             ip_address=request.remote_addr,
-            is_admin=False  # Все новые игроки по умолчанию не админы
+            is_admin=is_admin
         )
         db.session.add(new_player_session)
         db.session.commit()
         
         flask_session['player_id'] = player_id
         flask_session['player_name'] = player_name
-        flask_session['is_admin'] = False  # Явно указываем, что это не админ
+        flask_session['is_admin'] = is_admin  # Устанавливаем флаг администратора
         
-        return redirect(url_for('player', player_id=player_id))  # Всегда перенаправляем на страницу игрока
+        return redirect(url_for('player', player_id=player_id))
     
     return render_template('register.html', 
                          players=Player.query.all(),
@@ -319,6 +365,89 @@ def reveal_field():
         setattr(player, f"{data['field']}_revealed", ','.join(revealed_indices))
     
     db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/manage_players')
+def manage_players():
+    if not flask_session.get('is_admin'):
+        return redirect(url_for('index'))
+    
+    players = Player.query.all()
+    return render_template('manage_players.html', players=players)
+
+@app.route('/api/player/<int:player_id>', methods=['PUT'])
+def update_player(player_id):
+    if request.remote_addr != '127.0.0.1':
+        return jsonify({'error': 'Только администратор может изменять характеристики!'}), 403
+    
+    player = Player.query.get_or_404(player_id)
+    data = request.get_json()
+    
+    # Обновляем простые поля
+    simple_fields = ['name', 'profession', 'gender', 'age', 'childfree', 'physique']
+    for field in simple_fields:
+        if field in data:
+            setattr(player, field, data[field])
+    
+    # Обновляем поля-массивы
+    array_fields = ['health', 'traits', 'phobias', 'hobbies', 'additional_info', 'baggage', 'cards']
+    for field in array_fields:
+        if field in data:
+            setattr(player, field, '|'.join(data[field]))
+    
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/player', methods=['POST'])
+def add_player():
+    if request.remote_addr != '127.0.0.1':
+        return jsonify({'error': 'Только администратор может добавлять игроков!'}), 403
+    
+    data = request.get_json()
+    
+    new_player = Player(
+        name=data.get('name', 'Новый игрок'),
+        profession=data.get('profession', ''),
+        gender=data.get('gender', ''),
+        age=data.get('age', 30),
+        childfree=data.get('childfree', ''),
+        physique=data.get('physique', ''),
+        health='|'.join(data.get('health', [])),
+        traits='|'.join(data.get('traits', [])),
+        phobias='|'.join(data.get('phobias', [])),
+        hobbies='|'.join(data.get('hobbies', [])),
+        additional_info='|'.join(data.get('additional_info', [])),
+        baggage='|'.join(data.get('baggage', [])),
+        cards='|'.join(data.get('cards', [])),
+        name_revealed=False,
+        profession_revealed=False,
+        gender_revealed=False,
+        age_revealed=False,
+        childfree_revealed=False,
+        physique_revealed=False,
+        health_revealed="",
+        traits_revealed="",
+        phobias_revealed="",
+        hobbies_revealed="",
+        additional_info_revealed="",
+        baggage_revealed="",
+        cards_revealed=""
+    )
+    
+    db.session.add(new_player)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'player_id': new_player.id})
+
+@app.route('/api/player/<int:player_id>', methods=['DELETE'])
+def delete_player(player_id):
+    if request.remote_addr != '127.0.0.1':
+        return jsonify({'error': 'Только администратор может удалять игроков!'}), 403
+    
+    player = Player.query.get_or_404(player_id)
+    db.session.delete(player)
+    db.session.commit()
+    
     return jsonify({'success': True})
 
 if __name__ == '__main__':

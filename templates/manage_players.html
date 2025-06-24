@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Управление игроками</h1>
+    
+    <div class="mb-4">
+        <button class="btn btn-success" id="add-player-btn">Добавить нового игрока</button>
+    </div>
+    
+    <div class="accordion" id="playersAccordion">
+        {% for player in players %}
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="heading{{ player.id }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapse{{ player.id }}" aria-expanded="false" 
+                        aria-controls="collapse{{ player.id }}">
+                    <strong>Игрок №{{ player.id }}</strong> - {{ player.name }}
+                    <button class="btn btn-sm btn-danger ms-3 delete-player-btn" data-player-id="{{ player.id }}">Удалить</button>
+                </button>
+            </h2>
+            <div id="collapse{{ player.id }}" class="accordion-collapse collapse" 
+                aria-labelledby="heading{{ player.id }}" data-bs-parent="#playersAccordion">
+                <div class="accordion-body">
+                    <form class="player-form" data-player-id="{{ player.id }}">
+                        <div class="mb-3">
+                            <label class="form-label">Имя:</label>
+                            <input type="text" class="form-control" name="name" value="{{ player.name }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Профессия:</label>
+                            <input type="text" class="form-control" name="profession" value="{{ player.profession }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Пол:</label>
+                            <input type="text" class="form-control" name="gender" value="{{ player.gender }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Возраст:</label>
+                            <input type="number" class="form-control" name="age" value="{{ player.age }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Деторождение:</label>
+                            <input type="text" class="form-control" name="childfree" value="{{ player.childfree }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Телосложение:</label>
+                            <input type="text" class="form-control" name="physique" value="{{ player.physique }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Здоровье (каждое на новой строке):</label>
+                            <textarea class="form-control" name="health" rows="3">{{ player.health.replace('|', '\n') }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Черты характера (каждое на новой строке):</label>
+                            <textarea class="form-control" name="traits" rows="3">{{ player.traits.replace('|', '\n') }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Фобии (каждое на новой строке):</label>
+                            <textarea class="form-control" name="phobias" rows="3">{{ player.phobias.replace('|', '\n') }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Хобби (каждое на новой строке):</label>
+                            <textarea class="form-control" name="hobbies" rows="3">{{ player.hobbies.replace('|', '\n') }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Доп. информация (каждое на новой строке):</label>
+                            <textarea class="form-control" name="additional_info" rows="3">{{ player.additional_info.replace('|', '\n') }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Багаж (каждое на новой строке):</label>
+                            <textarea class="form-control" name="baggage" rows="3">{{ player.baggage.replace('|', '\n') }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Карты (каждое на новой строке):</label>
+                            <textarea class="form-control" name="cards" rows="3">{{ player.cards.replace('|', '\n') }}</textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Модальное окно для добавления нового игрока -->
+<div class="modal fade" id="addPlayerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить нового игрока</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="new-player-form">
+                    <div class="mb-3">
+                        <label class="form-label">Имя:</label>
+                        <input type="text" class="form-control" name="name" value="Новый игрок">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Профессия:</label>
+                        <input type="text" class="form-control" name="profession">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Пол:</label>
+                        <input type="text" class="form-control" name="gender">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Возраст:</label>
+                        <input type="number" class="form-control" name="age" value="30">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Деторождение:</label>
+                        <input type="text" class="form-control" name="childfree">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Телосложение:</label>
+                        <input type="text" class="form-control" name="physique">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Здоровье (каждое на новой строке):</label>
+                        <textarea class="form-control" name="health" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Черты характера (каждое на новой строке):</label>
+                        <textarea class="form-control" name="traits" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Фобии (каждое на новой строке):</label>
+                        <textarea class="form-control" name="phobias" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Хобби (каждое на новой строке):</label>
+                        <textarea class="form-control" name="hobbies" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Доп. информация (каждое на новой строке):</label>
+                        <textarea class="form-control" name="additional_info" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Багаж (каждое на новой строке):</label>
+                        <textarea class="form-control" name="baggage" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Карты (каждое на новой строке):</label>
+                        <textarea class="form-control" name="cards" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="confirm-add-player">Добавить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка формы изменения игрока
+    document.querySelectorAll('.player-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const playerId = this.dataset.playerId;
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('name'),
+                profession: formData.get('profession'),
+                gender: formData.get('gender'),
+                age: parseInt(formData.get('age')),
+                childfree: formData.get('childfree'),
+                physique: formData.get('physique'),
+                health: formData.get('health').split('\n').filter(item => item.trim()),
+                traits: formData.get('traits').split('\n').filter(item => item.trim()),
+                phobias: formData.get('phobias').split('\n').filter(item => item.trim()),
+                hobbies: formData.get('hobbies').split('\n').filter(item => item.trim()),
+                additional_info: formData.get('additional_info').split('\n').filter(item => item.trim()),
+                baggage: formData.get('baggage').split('\n').filter(item => item.trim()),
+                cards: formData.get('cards').split('\n').filter(item => item.trim())
+            };
+            
+            fetch(`/api/player/${playerId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Изменения сохранены!');
+                    location.reload();
+                }
+            });
+        });
+    });
+    
+    // Обработка кнопки удаления игрока
+    document.querySelectorAll('.delete-player-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const playerId = this.dataset.playerId;
+            
+            if (confirm(`Вы уверены, что хотите удалить игрока №${playerId}?`)) {
+                fetch(`/api/player/${playerId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        });
+    });
+    
+    // Обработка кнопки добавления игрока
+    const addPlayerModal = new bootstrap.Modal(document.getElementById('addPlayerModal'));
+    
+    document.getElementById('add-player-btn').addEventListener('click', function() {
+        addPlayerModal.show();
+    });
+    
+    document.getElementById('confirm-add-player').addEventListener('click', function() {
+        const form = document.getElementById('new-player-form');
+        const formData = new FormData(form);
+        
+        const data = {
+            name: formData.get('name'),
+            profession: formData.get('profession'),
+            gender: formData.get('gender'),
+            age: parseInt(formData.get('age')),
+            childfree: formData.get('childfree'),
+            physique: formData.get('physique'),
+            health: formData.get('health').split('\n').filter(item => item.trim()),
+            traits: formData.get('traits').split('\n').filter(item => item.trim()),
+            phobias: formData.get('phobias').split('\n').filter(item => item.trim()),
+            hobbies: formData.get('hobbies').split('\n').filter(item => item.trim()),
+            additional_info: formData.get('additional_info').split('\n').filter(item => item.trim()),
+            baggage: formData.get('baggage').split('\n').filter(item => item.trim()),
+            cards: formData.get('cards').split('\n').filter(item => item.trim())
+        };
+        
+        fetch('/api/player', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                addPlayerModal.hide();
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
