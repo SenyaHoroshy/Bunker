@@ -6,7 +6,7 @@
     
     <div class="accordion" id="playersAccordion">
         {% for player in players %}
-            {% if not player.is_current_player %}
+            {% if not player.is_current_player or is_admin %}
             <div class="accordion-item mb-3">
                 <h2 class="accordion-header" id="heading{{ player.id }}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
